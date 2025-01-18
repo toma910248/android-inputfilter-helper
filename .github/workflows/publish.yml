@@ -1,0 +1,36 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+
+
+jobs:
+  build-and-pushlish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'jetbrains'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle
+        run: ./gradlew inputfilter:build
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: ./gradlew inputfilter:publishReleasePublicationToGitHubPackagesRepository
